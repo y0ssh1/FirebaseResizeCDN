@@ -24,7 +24,7 @@ firebase deploy -P YOUR_FIREBASE_PROJECT_NAME
 # Usage
 
 ```
-yourhostingdomain.
+your_project_id.firebaseapp.com/images/image_name.png?size=(width: number | undefined)x(height: number | undefined)
 ```
 
 center crop | resize keeping aspect ratio
