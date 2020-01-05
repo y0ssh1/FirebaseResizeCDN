@@ -1,0 +1,1 @@
+export { onRequestResizedImage } from "./onRequestResizedImage";
