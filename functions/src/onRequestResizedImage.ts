@@ -21,8 +21,10 @@ export const onRequestResizedImage = functions
   .https.onRequest((req, res) => {
     const filePath = req.path.substr(1);
     const size = req.query.size as string;
+    const cropType = req.query.crop as string;
     let width: number | undefined;
     let height: number | undefined;
+    let sharpOption: sharp.OverlayOptions;
     if (typeof size === "undefined") {
       width = defaultWidth;
       height = undefined;
@@ -30,6 +32,20 @@ export const onRequestResizedImage = functions
       const [_width, _height] = size.split("x");
       width = _width ? Number(_width) : undefined;
       height = _height ? Number(_height) : undefined;
+    }
+    if (cropType === "circle") {
+      let radius: number | undefined;
+      if (width && height) {
+        radius = width > height ? height / 2 : width / 2;
+      } else if (width) {
+        radius = width / 2;
+      } else if (height) {
+        radius = height / 2;
+      }
+      sharpOption = {
+        input: Buffer.from(`<svg><circle cx="${radius}" cy="${radius}" r="${radius}" /></svg>`),
+        blend: "dest-in",
+      };
     }
     const bucket = storage.bucket(functions.config().storage.bucket);
     const tempFilePath = path.join(os.tmpdir(), `${Math.round(Math.random() * 10000)}`);
@@ -42,6 +58,7 @@ export const onRequestResizedImage = functions
         sharp(tempFilePath)
           .rotate()
           .resize(width, height)
+          .composite([sharpOption])
           .toBuffer()
           .then(data => {
             const type = fileType(data);
